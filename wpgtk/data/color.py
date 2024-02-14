@@ -50,6 +50,7 @@ def get_color_list(filename, json=False):
     if is_new and not json:
         if is_auto_adjust or is_light_theme:
             color_list = auto_adjust(color_list)
+        color_list = convert_to_base16(color_list)
         sample.create_sample(color_list, files.get_sample_path(filename))
         write_colors(filename, color_list)
 
@@ -91,9 +92,6 @@ def print_color_list(filename, json=False):
         "base0E"
         "base0F"
     ]
-
-    for index, color in enumerate(color_list):
-        print(colors_names[index], ": ", color)
 
 
 def is_dark_theme(color_list):
@@ -213,6 +211,45 @@ def auto_adjust(colors):
 
     return colors
 
+def convert_to_base16(colors):
+    """
+    Convert a list of colors from any color space to base16.
+
+    Parameters:
+    -----------
+    colors: List[str]
+        A list of colors in any color space.
+
+    Returns:
+    --------
+    List[str]
+        A list of colors in base16.
+    """
+    bh, bl, bs = util.hex_to_hls(colors[0])
+    fh, fl, fs = util.hex_to_hls(colors[15])
+
+    # Target lightness values
+    # Justification for skewness towards foreground in focus is mainly because
+    # it will be paired with foreground lightness and used for text.
+    focus_l = 0.04 * bl + 0.06 * fl
+    edge_l = 0.99 if fl > 0.5 else 0.1
+
+    # Background colors
+    bg_step = (focus_l - bl) / 0.3
+    # colors[1] = util.hls_to_hex({'l': bl + 0 * bg_step, 's': bs, 'h': bh})
+    # colors[2] = util.hls_to_hex({'l': bl + 0.1 * bg_step, 's': bs, 'h': bh})
+    # colors[3] = util.hls_to_hex({'l': bl + 0.2 * bg_step, 's': bs, 'h': bh})
+    # colors[4] = util.hls_to_hex({'l': bl + 0.3 * bg_step, 's': bs, 'h': bh})
+
+    # Foreground colors Possible negative value of `palette[5].l` will be
+    # handled in future conversion to hex.
+    fg_step = (edge_l - fl) / 0.2
+    colors[5] = util.hls_to_hex({"l": fl - 0.1 * fg_step, "s": fs, "h": fh})
+    # colors[6] = util.hls_to_hex({"l": fl + 0 * fg_step, "s": fs, "h": fh})
+    # colors[7] = util.hls_to_hex({"l": fl + 0.1 * fg_step, "s": fs, "h": fh})
+    # colors[8] = util.hls_to_hex({"l": fl + 0.2 * fg_step, "s": fs, "h": fh})
+
+    return colors
 
 def change_templates(colors):
     """call change_colors on each custom template
