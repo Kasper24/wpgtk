@@ -25,6 +25,10 @@ def read_args(args):
                         help="add a wallpaper and generate a colorscheme",
                         nargs="+")
 
+    parser.add_argument("--print",
+                        help="add a wallpaper and print a colorscheme",
+                        nargs="+")
+
     parser.add_argument("-d",
                         help="delete the wallpaper(s) from wallpaper folder",
                         nargs="+")
@@ -221,6 +225,14 @@ def process_args(args):
             for filename in glob.glob(pattern):
                 if path.isfile(filename):
                     add_action(filename)
+
+        exit(0)
+
+    if args.print:
+        for pattern in args.print:
+            for filename in glob.glob(pattern):
+                if path.isfile(filename):
+                    color.print_color_list(filename)
 
         exit(0)
 

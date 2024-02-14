@@ -55,6 +55,46 @@ def get_color_list(filename, json=False):
 
     return color_list
 
+def print_color_list(filename, json=False):
+    """extract a list with 16 colors from a json or a pywal dict"""
+    is_auto_adjust = settings.getboolean("auto_adjust", True)
+    is_light_theme = settings.getboolean("light_theme", False)
+
+    if json:
+        theme = pywal.util.read_file_json(filename)
+    else:
+        theme = get_pywal_dict(filename)
+
+    if "color" in theme:
+        color_list = theme["color"]
+    else:
+        color_list = list(theme["colors"].values())
+
+    if is_auto_adjust or is_light_theme:
+        color_list = auto_adjust(color_list)
+
+    colors_names = [
+        "base00"
+        "base01"
+        "base02"
+        "base03"
+        "base04"
+        "base05"
+        "base06"
+        "base07"
+        "base08"
+        "base09"
+        "base0A"
+        "base0B"
+        "base0C"
+        "base0D"
+        "base0E"
+        "base0F"
+    ]
+
+    for index, color in enumerate(color_list):
+        print(colors_names[index], ": ", color)
+
 
 def is_dark_theme(color_list):
     """compare brightness values to see if a color-scheme
